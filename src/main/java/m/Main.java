@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class Main {
-    public static Connection mysqlConnection = new MysqlHelper().getConnection();
+    private static Connection mysqlConnection = new MysqlHelper().getConnection();
 
     public static void main(String[] args) throws IOException, SQLException {
         Auto amortizator;
@@ -48,7 +48,7 @@ public class Main {
                 + " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         //Формируем список нужных файлов
-        File folder = new File("E:\\Grabber\\finder\\finder.koni.ie\\com\\en\\catalog");
+        File folder = new File("E:\\1\\finder\\finder.koni.ie\\com\\en\\catalog");
         ArrayList<File> fileLinkedList = new ArrayList<>();
         getFiles(folder, fileLinkedList);
 
@@ -124,21 +124,19 @@ public class Main {
 
                 //вытаскиваем названия изображений
                 String imgJpg = article.select("a").attr("onclick");
-                //int str1 = imgJpg.lastIndexOf("/com/en/popup?img=/img/products/");
                 int str1 = imgJpg.lastIndexOf("http://finder.koni.ie/com/en/popup?img=/img/products/");
-                //int str2 = imgJpg.indexOf("', 'popup',");
                 int str2 = imgJpg.indexOf("*/, 'popup',");
                 String jpg = "";
                 if (!imgJpg.isEmpty()) {
                     jpg = imgJpg.substring(str1, str2).replace("http://finder.koni.ie/com/en/popup?img=/img/products/","");
-                    //jpg = imgJpg.substring(str1, str2).replace("/com/en/popup?img=/img/products/","");
                 }
+
 
                 //вытаскиваем названия pdf
                 Elements filePdf = article.getElementsByAttributeValueEnding("tppabs", "pdf");
                 ArrayList<String> pdf;
                 HashSet<String> hash_pdf = new HashSet<>();
-                String filename_pdf = "";
+                String filename_pdf;
                 String prev_name = "";
 
                 for (Element f: filePdf) {
@@ -155,7 +153,8 @@ public class Main {
                 if (!correction.isEmpty()){         //если correction не пустое
                     correctionUpdate = correction;  //сохраняем переменную correction
                 }else{                              // если пустое то надо добавить
-                    if(automobile == car_name){
+                    assert automobile != null;
+                    if(automobile.equals(car_name)){ //automobile == car_name
                         correction = correctionUpdate;
                     }
                 }
@@ -281,17 +280,17 @@ public class Main {
     }
 
 
-    public static ArrayList<File> getFiles(File folder, ArrayList<File> fileLinkedList) throws
+    private static ArrayList<File> getFiles(File folder, ArrayList<File> fileLinkedList) throws
             NullPointerException {
-        for (File f : folder.listFiles()) {
+        for (File f : Objects.requireNonNull(folder.listFiles())) {
             if (f.isDirectory()) {
                 //марка
                 File folder1 = new File(folder, f.getName());
-                for (File fNext : folder1.listFiles()) {
+                for (File fNext : Objects.requireNonNull(folder1.listFiles())) {
                     if (fNext.isDirectory()) {
                         //модель
                         File folder2 = new File(folder1, fNext.getName());
-                        for (File fNext2 : folder2.listFiles()) {
+                        for (File fNext2 : Objects.requireNonNull(folder2.listFiles())) {
                             if (fNext2.isFile() && fNext2.getName().equals("all.htm")) {
                                 fileLinkedList.add(fNext2);
                             }
@@ -303,23 +302,19 @@ public class Main {
         return fileLinkedList;
     }
 
-    public static String getInfo(ArrayList<String> info) {
+    private static String getInfo(ArrayList<String> info) {
 
         StringBuilder buffer = new StringBuilder();
         boolean processedFirst = false;
-        String firstParam = null, secondParam = null;
+        String firstParam, secondParam = null;
 
-        try {
-            for (String record : info) {
-                if (processedFirst)
-                    buffer.append(";");
-                buffer.append(record);
-                processedFirst = true;
-            }
-            firstParam = buffer.toString();
-        } finally {
-            buffer = null;
+        for (String record : info) {
+            if (processedFirst)
+                buffer.append(";");
+            buffer.append(record);
+            processedFirst = true;
         }
+        firstParam = buffer.toString();
         return firstParam;
     }
 }
