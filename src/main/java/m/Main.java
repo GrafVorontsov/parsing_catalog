@@ -56,7 +56,10 @@ public class Main {
         for (File input1 : fileLinkedList) {
             String[] arrayFromString = input1.toString().split("\\\\");
             marka_name = arrayFromString[7];
+            marka_name = marka_name.substring(0, 1).toUpperCase() + marka_name.substring(1);
+
             model_name = arrayFromString[8];
+            model_name = model_name.substring(0, 1).toUpperCase() + model_name.substring(1);
 
             if (marka_name.equals(tmp)) {
                 //не добавляем марку авто
@@ -153,8 +156,8 @@ public class Main {
                 if (!correction.isEmpty()){         //если correction не пустое
                     correctionUpdate = correction;  //сохраняем переменную correction
                 }else{                              // если пустое то надо добавить
-                    assert automobile != null;
-                    if(automobile.equals(car_name)){ //automobile == car_name
+                    //assert automobile != null;
+                    if(model_name.equals(car_name)){ //automobile == car_name
                         correction = correctionUpdate;
                     }
                 }
