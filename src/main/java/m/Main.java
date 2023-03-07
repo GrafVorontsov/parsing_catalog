@@ -48,18 +48,17 @@ public class Main {
                 + " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         //Формируем список нужных файлов
-        File folder = new File("E:\\1\\finder\\finder.koni.ie\\com\\en\\catalog");
+        //File folder = new File("E:\\1\\finder\\finder.koni.ie\\com\\en\\catalog");    //Windows
+        File folder = new File("/home/sergio/finder.koni.ie/com/en/catalog");  //Linux
         ArrayList<File> fileLinkedList = new ArrayList<>();
         getFiles(folder, fileLinkedList);
 
         //парсим каждый файл по очереди
         for (File input1 : fileLinkedList) {
-            String[] arrayFromString = input1.toString().split("\\\\");
-            marka_name = arrayFromString[7];
-            marka_name = marka_name.substring(0, 1).toUpperCase() + marka_name.substring(1);
-
-            model_name = arrayFromString[8];
-            model_name = model_name.substring(0, 1).toUpperCase() + model_name.substring(1);
+            //String[] arrayFromString = input1.toString().split("\\\\");   //Windows
+            String[] arrayFromString = input1.toString().split("/"); //Linux
+            marka_name = firstUpperCase(arrayFromString[7]);    //Linux
+            model_name = firstUpperCase(arrayFromString[8]);    //Linux
 
             if (marka_name.equals(tmp)) {
                 //не добавляем марку авто
@@ -127,24 +126,30 @@ public class Main {
 
                 //вытаскиваем названия изображений
                 String imgJpg = article.select("a").attr("onclick");
-                int str1 = imgJpg.lastIndexOf("http://finder.koni.ie/com/en/popup?img=/img/products/");
-                int str2 = imgJpg.indexOf("*/, 'popup',");
+                //int str1 = imgJpg.lastIndexOf("http://finder.koni.ie/com/en/popup?img=/img/products/"); //Windows
+
+                int str1 = imgJpg.lastIndexOf("/com/en/popup?img=/img/products/");  //Linux
+                //int str2 = imgJpg.indexOf("*/, 'popup',");  //Windows
+                int str2 = imgJpg.indexOf("', 'popup',");   //Linux
                 String jpg = "";
                 if (!imgJpg.isEmpty()) {
-                    jpg = imgJpg.substring(str1, str2).replace("http://finder.koni.ie/com/en/popup?img=/img/products/","");
+                    //jpg = imgJpg.substring(str1, str2).replace("http://finder.koni.ie/com/en/popup?img=/img/products/",""); //Windows
+                    jpg = imgJpg.substring(str1, str2).replace("/com/en/popup?img=/img/products/","");  //Linux
                 }
 
 
                 //вытаскиваем названия pdf
-                Elements filePdf = article.getElementsByAttributeValueEnding("tppabs", "pdf");
+                Elements filePdf = article.getElementsByAttributeValueEnding("href", "pdf");
                 ArrayList<String> pdf;
                 HashSet<String> hash_pdf = new HashSet<>();
-                String filename_pdf;
+                String filename_pdf = "";
                 String prev_name = "";
 
                 for (Element f: filePdf) {
-                    if(f.hasAttr("tppabs")){
-                        filename_pdf = f.attr("tppabs").replace("http://finder.koni.ie/files/pdf/", "");
+                    if(f.hasAttr("href")){    //Linux
+                        //if(f.hasAttr("tppabs")){  //Windows
+                        //filename_pdf = f.attr("tppabs").replace("http://finder.koni.ie/files/pdf/", "");    //windows
+                        filename_pdf = f.attr("href").replace("http://finder.koni.ie/files/pdf/", "");    //Linux
                         if (!filename_pdf.equals(prev_name)){
                             hash_pdf.add(filename_pdf + "\n");
                             prev_name = filename_pdf;
@@ -156,8 +161,7 @@ public class Main {
                 if (!correction.isEmpty()){         //если correction не пустое
                     correctionUpdate = correction;  //сохраняем переменную correction
                 }else{                              // если пустое то надо добавить
-                    //assert automobile != null;
-                    if(model_name.equals(car_name)){ //automobile == car_name
+                    if(Objects.equals(automobile, car_name)){
                         correction = correctionUpdate;
                     }
                 }
@@ -294,7 +298,8 @@ public class Main {
                         //модель
                         File folder2 = new File(folder1, fNext.getName());
                         for (File fNext2 : Objects.requireNonNull(folder2.listFiles())) {
-                            if (fNext2.isFile() && fNext2.getName().equals("all.htm")) {
+                            //if (fNext2.isFile() && fNext2.getName().equals("all.htm")) { //windows
+                            if (fNext2.isFile() && fNext2.getName().equals("all.html")) { //Linux
                                 fileLinkedList.add(fNext2);
                             }
                         }
@@ -302,6 +307,8 @@ public class Main {
                 }
             }
         }
+
+        Collections.sort(fileLinkedList);
         return fileLinkedList;
     }
 
@@ -309,15 +316,25 @@ public class Main {
 
         StringBuilder buffer = new StringBuilder();
         boolean processedFirst = false;
-        String firstParam, secondParam = null;
+        String firstParam = null, secondParam = null;
 
-        for (String record : info) {
-            if (processedFirst)
-                buffer.append(";");
-            buffer.append(record);
-            processedFirst = true;
+        try {
+            for (String record : info) {
+                if (processedFirst)
+                    buffer.append(";");
+                buffer.append(record);
+                processedFirst = true;
+            }
+            firstParam = buffer.toString();
+        } finally {
+            buffer = null;
         }
-        firstParam = buffer.toString();
         return firstParam;
     }
+
+    private static String firstUpperCase(String word){
+        if(word == null || word.isEmpty()) return ""; //или return word;
+        return word.substring(0, 1).toUpperCase() + word.substring(1);
+    }
+
 }

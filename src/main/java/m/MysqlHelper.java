@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 public class MysqlHelper {
     private static final String dbDriver = "com.mysql.jdbc.Driver";
-    private static final String dbUrl = "jdbc:mysql://127.0.0.1:3307/";
+    private static final String dbUrl = "jdbc:mysql://127.0.0.1:3306/";
     private static final String dbDatabase = "koni";
     private static final String dbUser = "root";
     private static final String dbPassword = "";
@@ -24,9 +24,7 @@ public class MysqlHelper {
             st.executeQuery(sqlCharset);
             st.executeQuery("SET CHARACTER SET utf8");
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
